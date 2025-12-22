@@ -35,7 +35,7 @@ export const StoreService = {
                 .insert({
                     name,
                     password_hash
-                })
+                } as any)
                 .select()
                 .single();
 
@@ -62,7 +62,7 @@ export const StoreService = {
             // Get all stores
             const { data: stores, error } = await supabase
                 .from('stores')
-                .select('*');
+                .select('*') as any;
 
             if (error || !stores) {
                 console.error('Error fetching stores:', error);
@@ -71,7 +71,7 @@ export const StoreService = {
 
             // Check password against all stores
             const password_hash = btoa(password);
-            const matchingStore = stores.find(store => store.password_hash === password_hash);
+            const matchingStore = stores.find((store: any) => store.password_hash === password_hash);
 
             return matchingStore || null;
         } catch (error) {
@@ -141,7 +141,7 @@ export const StoreService = {
                 .update({
                     name: newName,
                     updated_at: new Date().toISOString()
-                })
+                } as any)
                 .eq('id', id)
                 .select()
                 .single();
