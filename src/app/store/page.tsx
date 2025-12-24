@@ -10,6 +10,7 @@ import { cn, POINTS_TO_CURRENCY, openWhatsApp } from "@/lib/utils";
 import { logout } from "../login/actions";
 import { useCurrentStore } from "@/hooks/useCurrentStore";
 import { SearchBar } from "@/components/shared/SearchBar";
+import { OrderDetailModal } from "@/components/shared/OrderDetailModal";
 
 function ProfitLossView({ orders, onRefresh }: { orders: Order[], onRefresh: () => void }) {
     const [dateFilter, setDateFilter] = useState<'this_month' | 'prev_month' | 'custom'>('this_month');
@@ -202,88 +203,12 @@ function ProfitLossView({ orders, onRefresh }: { orders: Order[], onRefresh: () 
 
             {/* Order Details Modal */}
             {selectedOrder && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedOrder(null)}>
-                    <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="text-xl font-bold text-white">{selectedOrder.customer_name}</h3>
-                                <p className="text-sm text-slate-400">Order Details</p>
-                            </div>
-                            <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                                <X size={20} className="text-slate-400" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-black/20 p-3 rounded-lg">
-                                    <p className="text-xs text-slate-500 uppercase">WhatsApp</p>
-                                    <p className="text-sm text-white font-mono">{selectedOrder.whatsapp_number}</p>
-                                </div>
-                                <div className="bg-black/20 p-3 rounded-lg">
-                                    <p className="text-xs text-slate-500 uppercase">Serial #</p>
-                                    <p className="text-sm text-cyan-400 font-mono">{selectedOrder.serial_number || 'N/A'}</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-black/20 p-3 rounded-lg">
-                                <p className="text-xs text-slate-500 uppercase">Shoe Model</p>
-                                <p className="text-sm text-white">{selectedOrder.shoe_model}</p>
-                            </div>
-
-                            <div className="bg-black/20 p-3 rounded-lg">
-                                <p className="text-xs text-slate-500 uppercase">Service</p>
-                                <p className="text-sm text-white">{selectedOrder.custom_complaint || 'Standard Service'}</p>
-                            </div>
-
-                            <div className="bg-black/20 p-3 rounded-lg">
-                                <p className="text-xs text-slate-500 uppercase mb-2">Profit Breakdown</p>
-                                <div className="space-y-1 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-slate-400">Customer Price:</span>
-                                        <span className="text-cyan-300 font-mono">{POINTS_TO_CURRENCY(selectedOrder.total_price)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-slate-400">Hub Cost:</span>
-                                        <span className="text-red-300 font-mono">- {POINTS_TO_CURRENCY(selectedOrder.hub_price || 0)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-slate-400">Expenses:</span>
-                                        <span className="text-orange-300 font-mono">- {POINTS_TO_CURRENCY(selectedOrder.expense || 0)}</span>
-                                    </div>
-                                    <div className="flex justify-between pt-2 border-t border-white/10">
-                                        <span className="text-white font-semibold">Profit:</span>
-                                        <span className={cn(
-                                            "font-mono font-bold",
-                                            ((selectedOrder.total_price || 0) - (selectedOrder.hub_price || 0) - (selectedOrder.expense || 0)) >= 0
-                                                ? "text-emerald-400"
-                                                : "text-red-400"
-                                        )}>
-                                            {POINTS_TO_CURRENCY((selectedOrder.total_price || 0) - (selectedOrder.hub_price || 0) - (selectedOrder.expense || 0))}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {selectedOrder.expected_return_date && (
-                                <div className="bg-black/20 p-3 rounded-lg">
-                                    <p className="text-xs text-slate-500 uppercase">Expected Return</p>
-                                    <p className="text-sm text-white">{new Date(selectedOrder.expected_return_date).toLocaleDateString()}</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex gap-2 pt-2">
-                            <button
-                                onClick={() => openWhatsApp(selectedOrder.whatsapp_number, `Hi ${selectedOrder.customer_name}, regarding your ${selectedOrder.shoe_model} repair...`)}
-                                className="flex-1 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                            >
-                                <MessageCircle size={16} />
-                                WhatsApp
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <OrderDetailModal
+                    order={selectedOrder}
+                    onClose={() => setSelectedOrder(null)}
+                    userRole="store"
+                    allowPriceEdit={false}
+                />
             )}
         </div>
     );
