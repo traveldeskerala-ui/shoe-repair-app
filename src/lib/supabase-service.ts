@@ -116,9 +116,6 @@ export const SupabaseService = {
             }
         }
 
-        // Log for "WhatsApp"
-        console.log("Real DB - WhatsApp Notification Sent to:", orderData.whatsapp_number, "Message: Order Received");
-
         return { ...orderData, complaints: order.complaints || [] };
     },
 
@@ -170,9 +167,7 @@ export const SupabaseService = {
             return null;
         }
 
-        if (status === 'in_store') {
-            console.log("Real DB - WhatsApp Notification: Your shoes are ready for collection!");
-        }
+        // WhatsApp notification would be sent here for in_store status
 
         return data;
     },
@@ -196,19 +191,15 @@ export const SupabaseService = {
             return null;
         }
 
-        console.log("Real DB - WhatsApp Notification: Repair cost estimation is " + price);
+        // WhatsApp notification would be sent here
         return data;
     },
 
     updateHubPrice: async (id: string, price: number): Promise<Order | null> => {
-        console.log('updateHubPrice called:', { id, price, supabaseInitialized: !!supabase });
-
         if (!supabase) {
-            console.error('Supabase client is not initialized!');
+            console.error('Supabase not initialized');
             return null;
         }
-
-        console.log('Updating hub price:', { id, price, type: typeof price });
 
         const { data, error } = await supabase
             .from('orders')
@@ -226,14 +217,11 @@ export const SupabaseService = {
             return null;
         }
 
-        console.log('Hub price updated successfully:', data);
         return data;
     },
 
     updateExpense: async (id: string, expense: number): Promise<Order | null> => {
         if (!supabase) return null;
-
-        console.log('Updating expense:', { id, expense, type: typeof expense });
 
         const { data, error } = await supabase
             .from('orders')
@@ -255,14 +243,11 @@ export const SupabaseService = {
             return null;
         }
 
-        console.log('Expense updated successfully:', data);
         return data;
     },
 
     updateBalancePayment: async (id: string, balancePaid: number, paymentMethod: string): Promise<Order | null> => {
         if (!supabase) return null;
-
-        console.log('Updating balance payment:', { id, balancePaid, paymentMethod });
 
         const { data, error } = await supabase
             .from('orders')
@@ -285,7 +270,6 @@ export const SupabaseService = {
             return null;
         }
 
-        console.log('Balance payment updated successfully:', data);
         return data;
     },
 
@@ -452,7 +436,6 @@ export const SupabaseService = {
             return null;
         }
 
-        console.log('Order completion updated successfully:', data);
         return data;
     },
 
