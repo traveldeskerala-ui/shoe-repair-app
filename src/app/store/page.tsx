@@ -9,6 +9,7 @@ import { Plus, LayoutTemplate, RefreshCw, LogOut, Settings, Trash2, Layers, Mess
 import { cn, POINTS_TO_CURRENCY, openWhatsApp } from "@/lib/utils";
 import { logout } from "../login/actions";
 import { useCurrentStore } from "@/hooks/useCurrentStore";
+import { SearchBar } from "@/components/shared/SearchBar";
 
 function ProfitLossView({ orders, onRefresh }: { orders: Order[], onRefresh: () => void }) {
     const [dateFilter, setDateFilter] = useState<'this_month' | 'prev_month' | 'custom'>('this_month');
@@ -294,6 +295,7 @@ export default function StorePage() {
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [refreshKey, setRefreshKey] = useState(0);
     const { storeId } = useCurrentStore();
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Complaint Config State
     const [newComplaintDesc, setNewComplaintDesc] = useState("");
@@ -306,6 +308,19 @@ export default function StorePage() {
         }
         MockService.getComplaints().then(setComplaints);
     }, [refreshKey, storeId]);
+
+    // Filter orders based on search query
+    const filteredOrders = searchQuery.trim()
+        ? orders.filter(order => {
+            const query = searchQuery.toLowerCase();
+            return (
+                order.customer_name?.toLowerCase().includes(query) ||
+                order.whatsapp_number?.includes(searchQuery) ||
+                order.shoe_model?.toLowerCase().includes(query) ||
+                order.serial_number?.toLowerCase().includes(query)
+            );
+        })
+        : orders;
 
     const handleRefresh = () => setRefreshKey(k => k + 1);
 
@@ -568,6 +583,19 @@ export default function StorePage() {
                 </div>
             </div>
 
+            {/* Search Bar */}
+            {(view === 'kanban' || view === 'profit_loss') && (
+                <div className="max-w-2xl mx-auto px-6 mb-4">
+                    <SearchBar
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search by name, phone, model, or serial..."
+                        resultsCount={filteredOrders.length}
+                        totalCount={orders.length}
+                    />
+                </div>
+            )}
+
             {/* Content */}
             <div className="relative" suppressHydrationWarning>
                 {view === 'new' && (
@@ -584,7 +612,7 @@ export default function StorePage() {
                             </button>
                         </div>
                         <KanbanBoard
-                            orders={orders}
+                            orders={filteredOrders}
                             readOnly={false}
                             onOrderMove={onOrderMove}
                             userRole="store"
@@ -602,7 +630,7 @@ export default function StorePage() {
                 )}
 
                 {view === 'profit_loss' && (
-                    <ProfitLossView orders={orders} onRefresh={handleRefresh} />
+                    <ProfitLossView orders={filteredOrders} onRefresh={handleRefresh} />
                 )}
 
                 {view === 'config' && (

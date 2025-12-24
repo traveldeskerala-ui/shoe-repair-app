@@ -9,6 +9,7 @@ import { RefreshCw, Layers, LogOut, Store as StoreIcon } from "lucide-react";
 import { openWhatsApp } from "@/lib/utils";
 import { logout } from "../login/actions";
 import { StoreService } from "@/lib/store-service";
+import { SearchBar } from "@/components/shared/SearchBar";
 
 export default function HubPage() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -16,6 +17,7 @@ export default function HubPage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [stores, setStores] = useState<Store[]>([]);
     const [selectedStoreId, setSelectedStoreId] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         MockService.getOrders().then(setOrders);
@@ -23,10 +25,23 @@ export default function HubPage() {
     }, [refreshKey]);
 
     // Filter orders by selected store and exclude in-house orders
-    const filteredOrders = (selectedStoreId === 'all'
+    const storeFilteredOrders = (selectedStoreId === 'all'
         ? orders
         : orders.filter(o => o.store_id === selectedStoreId)
     ).filter(o => !o.is_in_house); // Exclude in-house orders from hub view
+
+    // Apply search filter
+    const filteredOrders = searchQuery.trim()
+        ? storeFilteredOrders.filter(order => {
+            const query = searchQuery.toLowerCase();
+            return (
+                order.customer_name?.toLowerCase().includes(query) ||
+                order.whatsapp_number?.includes(searchQuery) ||
+                order.shoe_model?.toLowerCase().includes(query) ||
+                order.serial_number?.toLowerCase().includes(query)
+            );
+        })
+        : storeFilteredOrders;
 
     const handleRefresh = () => setRefreshKey(k => k + 1);
 
@@ -135,6 +150,17 @@ export default function HubPage() {
                         Showing {filteredOrders.length} of {orders.length} orders
                     </div>
                 </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="px-6 pb-2">
+                <SearchBar
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder="Search by name, phone, model, or serial..."
+                    resultsCount={filteredOrders.length}
+                    totalCount={storeFilteredOrders.length}
+                />
             </div>
 
             {/* Board Area */}
